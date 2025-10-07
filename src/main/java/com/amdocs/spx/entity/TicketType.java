@@ -1,4 +1,4 @@
-package com.amdocs.spx.Entity;
+package com.amdocs.spx.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
