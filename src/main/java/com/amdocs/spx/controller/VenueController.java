@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/venues")
+@RequestMapping("api/venues")
 public class VenueController {
 
     @Autowired
