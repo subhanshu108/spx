@@ -79,7 +79,7 @@ public class VenueController {
     }
 
     // Get all venues - No parameters needed
-    @GetMapping
+    @GetMapping("/getVenues")
     public ResponseEntity<List<Venue>> getAllVenues() {
         try {
             List<Venue> venues = venueService.getAllVenue();
