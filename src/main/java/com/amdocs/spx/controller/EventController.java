@@ -19,7 +19,7 @@ public class EventController {
     /**
      * Create new event
      */
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<Event> createEvent(@RequestBody Event event) {
         try {
             Event createdEvent = eventService.createEvent(event);
