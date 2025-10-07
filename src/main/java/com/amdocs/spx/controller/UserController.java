@@ -10,13 +10,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 public class UserController {
 
     @Autowired
     private UserService userService;
+    
+    @GetMapping("/")
+    public String home() {
+    	return "index";
+    }
 
-    // 1. Register new user account - matches UserService.registerUser()
+    // 1. Register new user account
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody User user) {
         try {
@@ -27,7 +32,19 @@ public class UserController {
         }
     }
 
-    // 2. Retrieve user details by ID - matches UserService.getUserById()
+    // 2. Login user - matches UserService.loginUser()
+    @PostMapping("/login")
+    public ResponseEntity<User> loginUser(@RequestParam String usernameOrEmail, 
+                                          @RequestParam String password) {
+        try {
+            User user = userService.loginUser(usernameOrEmail, password);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
+
+    // 3. Retrieve user details by ID
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         try {
@@ -38,10 +55,10 @@ public class UserController {
         }
     }
 
-    // 3. Get all users - matches UserService.getAllUsers()
+    // 4. Get all users
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers(@RequestParam(required = false) String name) {
-        List<User> users = userService.getAllUsers(name);
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 }
