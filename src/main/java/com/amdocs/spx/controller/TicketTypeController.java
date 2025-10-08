@@ -19,7 +19,7 @@ public class TicketTypeController {
     /**
      * Add ticket type to event
      */
-    @PostMapping
+    @PostMapping("/create-ticket")
     public ResponseEntity<TicketType> createTicketType(@RequestBody TicketType ticketType) {
         try {
             TicketType createdTicketType = ticketTypeService.createTicketType(ticketType);

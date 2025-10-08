@@ -1,6 +1,6 @@
 package com.amdocs.spx.entity;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -33,10 +33,12 @@ public class Event {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venue_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "events"})
     private Venue venue;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "organizedEvents", "bookings", "reviews"})
     private User organizer;
 
     @Column(name = "event_date", nullable = false)
@@ -55,11 +57,14 @@ public class Event {
     private Integer ticketsSold = 0;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("event")
     private List<TicketType> ticketTypes = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("event")
     private List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("event")
     private List<Review> reviews = new ArrayList<>();
 }
