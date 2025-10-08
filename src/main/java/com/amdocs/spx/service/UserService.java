@@ -1,8 +1,6 @@
 package com.amdocs.spx.service;
 
-
 import com.amdocs.spx.entity.User;
-import com.amdocs.spx.repository.TicketTypeRepository;
 import com.amdocs.spx.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,10 +13,19 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     public User registerUser(User user) {
+        // Check if username or email already exists
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already exists");
+        }
+        
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
     }
@@ -34,7 +41,7 @@ public class UserService {
             throw new RuntimeException("Account is inactive");
         }
 
-        // Verify password (you'll need password encoder)
+        // Verify password
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
             throw new RuntimeException("Invalid credentials");
         }
@@ -42,12 +49,12 @@ public class UserService {
         return user;
     }
 
-
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
     }
-    public List<User> getAllUsers(){
+    
+    public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 }
