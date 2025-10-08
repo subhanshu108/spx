@@ -1,6 +1,6 @@
 package com.amdocs.spx.controller;
 
-import com.amdocs.spx.entity.Order;
+import com.amdocs.spx.dto.OrderDTO;
 import com.amdocs.spx.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,15 +23,15 @@ public class OrderController {
      * Create order from booking
      */
     @PostMapping("/createOrder")
-    public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody CreateOrderRequest request) {
         try {
-            Order order;
+            OrderDTO orderDTO;
             if (request.getPaymentMethod() != null) {
-                order = orderService.createOrder(request.getBookingId(), request.getPaymentMethod());
+                orderDTO = orderService.createOrder(request.getBookingId(), request.getPaymentMethod());
             } else {
-                order = orderService.createOrder(request.getBookingId());
+                orderDTO = orderService.createOrder(request.getBookingId());
             }
-            return new ResponseEntity<>(order, HttpStatus.CREATED);
+            return new ResponseEntity<>(orderDTO, HttpStatus.CREATED);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
         } catch (RuntimeException e) {
@@ -45,9 +45,9 @@ public class OrderController {
      * Get order details
      */
     @GetMapping("/getOrderById/{orderId}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
+    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Long orderId) {
         try {
-            Order order = orderService.getOrderById(orderId);
+            OrderDTO order = orderService.getOrderById(orderId);
             return new ResponseEntity<>(order, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -60,9 +60,9 @@ public class OrderController {
      * Find order by order number
      */
     @PostMapping("/number")
-    public ResponseEntity<Order> getOrderByNumber(@RequestBody OrderNumberRequest request) {
+    public ResponseEntity<OrderDTO> getOrderByNumber(@RequestBody OrderNumberRequest request) {
         try {
-            Order order = orderService.getOrderByNumber(request.getOrderNumber());
+            OrderDTO order = orderService.getOrderByNumber(request.getOrderNumber());
             return new ResponseEntity<>(order, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -75,9 +75,9 @@ public class OrderController {
      * Get all orders for a user
      */
     @PostMapping("/user")
-    public ResponseEntity<List<Order>> getUserOrders(@RequestBody UserRequest request) {
+    public ResponseEntity<List<OrderDTO>> getUserOrders(@RequestBody UserRequest request) {
         try {
-            List<Order> orders = orderService.getUserOrders(request.getUserId());
+            List<OrderDTO> orders = orderService.getUserOrders(request.getUserId());
             return new ResponseEntity<>(orders, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -90,9 +90,9 @@ public class OrderController {
      * Update payment status
      */
     @PutMapping("/{orderId}/payment-status")
-    public ResponseEntity<Order> updatePaymentStatus(@PathVariable Long orderId, @RequestBody PaymentStatusRequest request) {
+    public ResponseEntity<OrderDTO> updatePaymentStatus(@PathVariable Long orderId, @RequestBody PaymentStatusRequest request) {
         try {
-            Order updatedOrder = orderService.updatePaymentStatus(orderId, request.getPaymentStatus());
+            OrderDTO updatedOrder = orderService.updatePaymentStatus(orderId, request.getPaymentStatus());
             return new ResponseEntity<>(updatedOrder, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -107,9 +107,9 @@ public class OrderController {
      * Handle payment processing
      */
     @PutMapping("/{orderId}/process-payment")
-    public ResponseEntity<Order> processPayment(@PathVariable Long orderId, @RequestBody ProcessPaymentRequest request) {
+    public ResponseEntity<OrderDTO> processPayment(@PathVariable Long orderId, @RequestBody ProcessPaymentRequest request) {
         try {
-            Order processedOrder = orderService.processPayment(orderId, request.getPaymentMethod(), request.getTransactionId());
+            OrderDTO processedOrder = orderService.processPayment(orderId, request.getPaymentMethod(), request.getTransactionId());
             return new ResponseEntity<>(processedOrder, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
@@ -126,9 +126,9 @@ public class OrderController {
      * Confirm successful payment
      */
     @PutMapping("/{orderId}/confirm-payment")
-    public ResponseEntity<Order> confirmPayment(@PathVariable Long orderId, @RequestBody ConfirmPaymentRequest request) {
+    public ResponseEntity<OrderDTO> confirmPayment(@PathVariable Long orderId, @RequestBody ConfirmPaymentRequest request) {
         try {
-            Order confirmedOrder = orderService.confirmPayment(orderId, request.getTransactionId());
+            OrderDTO confirmedOrder = orderService.confirmPayment(orderId, request.getTransactionId());
             return new ResponseEntity<>(confirmedOrder, HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
@@ -143,9 +143,9 @@ public class OrderController {
      * Mark payment as failed
      */
     @PutMapping("/{orderId}/mark-failed")
-    public ResponseEntity<Order> markPaymentFailed(@PathVariable Long orderId, @RequestBody PaymentFailedRequest request) {
+    public ResponseEntity<OrderDTO> markPaymentFailed(@PathVariable Long orderId, @RequestBody PaymentFailedRequest request) {
         try {
-            Order failedOrder = orderService.markPaymentFailed(orderId, request.getReason());
+            OrderDTO failedOrder = orderService.markPaymentFailed(orderId, request.getReason());
             return new ResponseEntity<>(failedOrder, HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
@@ -160,9 +160,9 @@ public class OrderController {
      * Process refund
      */
     @PutMapping("/{orderId}/refund")
-    public ResponseEntity<Order> refundOrder(@PathVariable Long orderId, @RequestBody RefundRequest request) {
+    public ResponseEntity<OrderDTO> refundOrder(@PathVariable Long orderId, @RequestBody RefundRequest request) {
         try {
-            Order refundedOrder = orderService.refundOrder(orderId, request.getReason());
+            OrderDTO refundedOrder = orderService.refundOrder(orderId, request.getReason());
             return new ResponseEntity<>(refundedOrder, HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
@@ -177,9 +177,9 @@ public class OrderController {
      * Get user's order history
      */
     @PostMapping("/user/history")
-    public ResponseEntity<List<Order>> getOrderHistory(@RequestBody UserRequest request) {
+    public ResponseEntity<List<OrderDTO>> getOrderHistory(@RequestBody UserRequest request) {
         try {
-            List<Order> orderHistory = orderService.getOrderHistory(request.getUserId());
+            List<OrderDTO> orderHistory = orderService.getOrderHistory(request.getUserId());
             return new ResponseEntity<>(orderHistory, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -192,9 +192,9 @@ public class OrderController {
      * Get orders by payment status
      */
     @PostMapping("/payment-status")
-    public ResponseEntity<List<Order>> getOrdersByPaymentStatus(@RequestBody PaymentStatusRequest request) {
+    public ResponseEntity<List<OrderDTO>> getOrdersByPaymentStatus(@RequestBody PaymentStatusRequest request) {
         try {
-            List<Order> orders = orderService.getOrdersByPaymentStatus(request.getPaymentStatus());
+            List<OrderDTO> orders = orderService.getOrdersByPaymentStatus(request.getPaymentStatus());
             return new ResponseEntity<>(orders, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -205,9 +205,9 @@ public class OrderController {
      * Get user orders by payment status
      */
     @PostMapping("/user/payment-status")
-    public ResponseEntity<List<Order>> getUserOrdersByPaymentStatus(@RequestBody UserPaymentStatusRequest request) {
+    public ResponseEntity<List<OrderDTO>> getUserOrdersByPaymentStatus(@RequestBody UserPaymentStatusRequest request) {
         try {
-            List<Order> orders = orderService.getUserOrdersByPaymentStatus(request.getUserId(), request.getPaymentStatus());
+            List<OrderDTO> orders = orderService.getUserOrdersByPaymentStatus(request.getUserId(), request.getPaymentStatus());
             return new ResponseEntity<>(orders, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
@@ -220,9 +220,9 @@ public class OrderController {
      * Get pending orders (for admin/cleanup)
      */
     @GetMapping("/pending")
-    public ResponseEntity<List<Order>> getPendingOrders() {
+    public ResponseEntity<List<OrderDTO>> getPendingOrders() {
         try {
-            List<Order> pendingOrders = orderService.getPendingOrders();
+            List<OrderDTO> pendingOrders = orderService.getPendingOrders();
             return new ResponseEntity<>(pendingOrders, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -233,9 +233,9 @@ public class OrderController {
      * Get orders between dates
      */
     @PostMapping("/date-range")
-    public ResponseEntity<List<Order>> getOrdersBetweenDates(@RequestBody DateRangeRequest request) {
+    public ResponseEntity<List<OrderDTO>> getOrdersBetweenDates(@RequestBody DateRangeRequest request) {
         try {
-            List<Order> orders = orderService.getOrdersBetweenDates(request.getStartDate(), request.getEndDate());
+            List<OrderDTO> orders = orderService.getOrdersBetweenDates(request.getStartDate(), request.getEndDate());
             return new ResponseEntity<>(orders, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -275,9 +275,9 @@ public class OrderController {
      * Retry failed payment
      */
     @PutMapping("/{orderId}/retry-payment")
-    public ResponseEntity<Order> retryPayment(@PathVariable Long orderId) {
+    public ResponseEntity<OrderDTO> retryPayment(@PathVariable Long orderId) {
         try {
-            Order retriedOrder = orderService.retryPayment(orderId);
+            OrderDTO retriedOrder = orderService.retryPayment(orderId);
             return new ResponseEntity<>(retriedOrder, HttpStatus.OK);
         } catch (IllegalStateException e) {
             return new ResponseEntity<>(null, HttpStatus.CONFLICT);
