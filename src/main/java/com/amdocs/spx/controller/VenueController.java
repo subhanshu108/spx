@@ -22,7 +22,7 @@ public class VenueController {
     private VenueService venueService;
 
     // Create a new venue - Use @RequestBody for JSON payload
-    @PostMapping
+    @PostMapping("/createVenue")
     public ResponseEntity<Venue> createVenue(@RequestBody Venue venue) {
         try {
             Venue createdVenue = venueService.createVenue(venue);

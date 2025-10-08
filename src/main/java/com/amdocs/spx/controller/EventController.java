@@ -83,7 +83,7 @@ public class EventController {
     /**
      * List all events
      */
-    @GetMapping
+    @GetMapping("/getAllEvents")
     public ResponseEntity<List<Event>> getAllEvents() {
         try {
             List<Event> events = eventService.getAllEvents();

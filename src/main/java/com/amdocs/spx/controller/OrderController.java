@@ -22,7 +22,7 @@ public class OrderController {
     /**
      * Create order from booking
      */
-    @PostMapping
+    @PostMapping("/createOrder")
     public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
         try {
             Order order;
@@ -44,7 +44,7 @@ public class OrderController {
     /**
      * Get order details
      */
-    @GetMapping("/{orderId}")
+    @GetMapping("/getOrderById/{orderId}")
     public ResponseEntity<Order> getOrderById(@PathVariable Long orderId) {
         try {
             Order order = orderService.getOrderById(orderId);
