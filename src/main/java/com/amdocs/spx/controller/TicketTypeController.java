@@ -27,10 +27,14 @@ public class TicketTypeController {
     @PostMapping("/create-ticket")
     public TicketTypeDTO createTicketType(@RequestBody TicketType ticketType) {
 
+//        private Long eventId;
+//        private String typeName;
+//        private BigDecimal price;
+//        private Integer quantityAvailable;
+//        private Integer quantitySold;
+//        private Boolean isActive;
         TicketTypeDTO ticketTypeDTO = new TicketTypeDTO();
-        TicketType ticketType1 = ticketTypeService.createTicketType(ticketType);
-
-        return getTicketTypeDTO(ticketTypeDTO, ticketType1);
+        return getTicketTypeDTO(ticketTypeDTO, ticketType);
     }
 
     /**

@@ -1,6 +1,5 @@
 package com.amdocs.spx.controller;
 
-import com.amdocs.spx.dto.VenueDTO;
 import com.amdocs.spx.entity.Event;
 import com.amdocs.spx.entity.Venue;
 import com.amdocs.spx.service.VenueService;
@@ -22,23 +21,12 @@ public class VenueController {
     @Autowired
     private VenueService venueService;
 
-    private VenueDTO convertToDTO(Venue venue) {
-        VenueDTO venueDTO = new VenueDTO();
-        venueDTO.setVenueId(venue.getVenueId());
-        venueDTO.setVenueName(venue.getVenueName());
-        venueDTO.setVenueAddress(venue.getAddress());
-        venueDTO.setCity(venue.getCity());
-        venueDTO.setTotalCapacity(venue.getTotalCapacity());
-        return venueDTO;
-    }
-
     // Create a new venue - Use @RequestBody for JSON payload
     @PostMapping("/createVenue")
-    public ResponseEntity<VenueDTO> createVenue(@RequestBody Venue venue) {
+    public ResponseEntity<Venue> createVenue(@RequestBody Venue venue) {
         try {
             Venue createdVenue = venueService.createVenue(venue);
-            VenueDTO venueDTO = convertToDTO(createdVenue);
-            return new ResponseEntity<>(venueDTO, HttpStatus.CREATED);
+            return new ResponseEntity<>(createdVenue, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -46,15 +34,14 @@ public class VenueController {
 
     // Update an existing venue - Use @RequestBody for JSON payload
     @PutMapping("/{venueId}")
-    public ResponseEntity<VenueDTO> updateVenue(@PathVariable Long venueId, @RequestBody Venue venue) {
+    public ResponseEntity<Venue> updateVenue(@PathVariable Long venueId, @RequestBody Venue venue) {
         try {
             // Ensure the venue ID in path matches the venue object ID
             if (!venueId.equals(venue.getVenueId())) {
                 return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
             }
             Venue updatedVenue = venueService.updateVenue(venue);
-            VenueDTO venueDTO = convertToDTO(updatedVenue);
-            return new ResponseEntity<>(venueDTO, HttpStatus.OK);
+            return new ResponseEntity<>(updatedVenue, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
