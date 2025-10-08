@@ -7,6 +7,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.service.annotation.DeleteExchange;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,6 +43,11 @@ public class OrderController {
         }
     }
 
+    @DeleteMapping("/deleteOrder/{id}")
+    public String deleteOrder(@PathVariable Long id) {
+        return orderService.deleteOrder(id);
+    }
+
     /**
      * Get order details
      */
@@ -55,6 +61,11 @@ public class OrderController {
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @GetMapping("/getAllOrders")
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        return orderService.getAllOrders();
     }
 
     /**

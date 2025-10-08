@@ -10,6 +10,7 @@ import com.amdocs.spx.repository.OrderRepository;
 import com.amdocs.spx.repository.UserRepository;
 import com.amdocs.spx.entity.Order;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -351,5 +352,19 @@ public class OrderService {
 
         Order retriedOrder = orderRepository.save(order);
         return orderMapper.toDTO(retriedOrder);
+    }
+
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return ResponseEntity.ok(orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList()));
+    }
+
+    public String deleteOrder(Long id) {
+        Order order = orderRepository.findById(id)
+                        .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+        orderRepository.deleteById(id);
+        return "Order deleted Successfully";
     }
 }
