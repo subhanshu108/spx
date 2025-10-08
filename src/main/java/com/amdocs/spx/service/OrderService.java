@@ -43,31 +43,22 @@ public class OrderService {
     public OrderDTO createOrder(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
-
-        // Check if booking already has an order
-        if (!booking.getOrders().isEmpty()) {
-            throw new IllegalStateException("Order already exists for this booking");
-        }
-
-        // Validate booking is in pending status
-        if (!"PENDING".equals(booking.getBookingStatus())) {
-            throw new IllegalStateException("Can only create order for pending bookings");
-        }
-
-        // Validate booking is still valid
-        if (!bookingService.validateBooking(bookingId)) {
-            throw new IllegalStateException("Booking is no longer valid");
+        User user = userRepository.findById(booking.getUser().getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + booking.getUser().getUserId()));
+        if(!booking.getBookingStatus().equals("PENDING")) {
+            throw new RuntimeException("Booking status is not PENDING");
         }
 
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
         order.setBooking(booking);
-        order.setUser(booking.getUser());
+        order.setUser(user);
         order.setTotalAmount(booking.getTotalAmount());
-        order.setPaymentStatus("PENDING");
+        order.setPaymentStatus("CONFIRMED");
         order.setCreatedAt(LocalDateTime.now());
-
         Order savedOrder = orderRepository.save(order);
+        booking.setBookingStatus("CONFIRMED");
+        bookingRepository.save(booking);
         return orderMapper.toDTO(savedOrder);
     }
 

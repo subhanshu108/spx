@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/ticket-types")
+@CrossOrigin(origins = "*")
 public class TicketTypeController {
 
     @Autowired
@@ -27,14 +28,10 @@ public class TicketTypeController {
     @PostMapping("/create-ticket")
     public TicketTypeDTO createTicketType(@RequestBody TicketType ticketType) {
 
-//        private Long eventId;
-//        private String typeName;
-//        private BigDecimal price;
-//        private Integer quantityAvailable;
-//        private Integer quantitySold;
-//        private Boolean isActive;
         TicketTypeDTO ticketTypeDTO = new TicketTypeDTO();
-        return getTicketTypeDTO(ticketTypeDTO, ticketType);
+        TicketType ticketType1 = ticketTypeService.createTicketType(ticketType);
+
+        return getTicketTypeDTO(ticketTypeDTO, ticketType1);
     }
 
     /**
@@ -82,7 +79,7 @@ public class TicketTypeController {
     public ResponseEntity<TicketTypeDTO> getTicketTypeById(@PathVariable Long ticketTypeId) {
         try {
             TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
-
+            System.out.println(ticketType.getTicketTypeId());
             // Convert tickettype to DTO
             TicketTypeDTO ticketTypeDTO = getTicketTypeDTO(new TicketTypeDTO(), ticketType);
 

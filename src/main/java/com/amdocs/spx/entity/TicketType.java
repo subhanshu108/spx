@@ -25,7 +25,7 @@ public class TicketType {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
-    @JsonIgnore
+    @JsonIgnoreProperties({"ticketTypes", "bookings", "organizer"})
     private Event event;
 
     @Column(name = "type_name", nullable = false, length = 100)

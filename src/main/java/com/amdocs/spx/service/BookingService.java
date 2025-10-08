@@ -85,6 +85,7 @@ public class BookingService {
 
         // Generate unique booking reference
         booking.setBookingReference(generateBookingReference());
+        System.out.println("booking reference : " + booking.getBookingReference());
 
         // Set default values
         if (booking.getBookingStatus() == null) {
@@ -93,7 +94,6 @@ public class BookingService {
         if (booking.getBookingDate() == null) {
             booking.setBookingDate(LocalDateTime.now());
         }
-
         // Reserve tickets (increment sold count)
         ticketTypeService.incrementSoldTickets(booking.getTicketType().getTicketTypeId(), booking.getQuantity());
 
@@ -106,6 +106,7 @@ public class BookingService {
     public BookingRequest getBookingById(Long bookingId) {
        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+       System.out.println(booking.getBookingReference());
        BookingRequest bookingRequest = new BookingRequest();
        bookingRequest.setBookingStatus(booking.getBookingStatus());
        bookingRequest.setBookingReference(booking.getBookingReference());
@@ -122,8 +123,10 @@ public class BookingService {
      * Find booking by reference number
      */
     public Booking getBookingByReference(String bookingReference) {
-        return bookingRepository.findByBookingReference(bookingReference)
+        Booking booking =  bookingRepository.findByBookingReference(bookingReference)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with reference: " + bookingReference));
+        System.out.println("booking reference : " + booking.getBookingReference());
+        return booking;
     }
 
     /**

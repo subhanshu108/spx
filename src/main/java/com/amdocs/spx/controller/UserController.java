@@ -74,7 +74,7 @@ public class UserController {
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
-        user.setPasswordHash(userDTO.getPassword()); // Service will encode this
+        user.setPasswordHash(userDTO.getPasswordHash()); // Service will encode this
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
         user.setPhoneNumber(userDTO.getPhoneNumber());
@@ -88,7 +88,7 @@ public class UserController {
         userDTO.setUserId(user.getUserId());
         userDTO.setUsername(user.getUsername());
         userDTO.setEmail(user.getEmail());
-        userDTO.setPassword(null); // Never return password in response
+        userDTO.setPasswordHash(null); // Never return password in response
         userDTO.setFirstName(user.getFirstName());
         userDTO.setLastName(user.getLastName());
         userDTO.setPhoneNumber(user.getPhoneNumber());

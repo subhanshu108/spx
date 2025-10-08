@@ -4,6 +4,7 @@ import com.amdocs.spx.entity.Booking;
 import com.amdocs.spx.entity.Event;
 import com.amdocs.spx.entity.TicketType;
 import com.amdocs.spx.entity.User;
+import com.amdocs.spx.repository.BookingRepository;
 import com.amdocs.spx.repository.EventRepository;
 import com.amdocs.spx.repository.TicketTypeRepository;
 import com.amdocs.spx.repository.UserRepository;
@@ -16,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("api/bookings")
+@CrossOrigin(origins = "*")
 public class BookingController {
 
     @Autowired
@@ -34,6 +37,9 @@ public class BookingController {
     @Autowired
     private EventRepository eventRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
 
     private Booking convertToDto(BookingRequest bookingRequest) {
         Booking booking = new Booking();
@@ -46,12 +52,23 @@ public class BookingController {
                 .orElseThrow(() -> new RuntimeException("User not found"));
         booking.setUser(user);
         TicketType ticketType = ticketTypeRepository.findById(bookingRequest.getTicketTypeId())
-                        .orElseThrow(() -> new RuntimeException("TicketType not found"));
+                .orElseThrow(() -> new RuntimeException("TicketType not found"));
         booking.setTicketType(ticketType);
         booking.setQuantity(bookingRequest.getQuantity());
         booking.setBookingStatus(bookingRequest.getBookingStatus());
         return booking;
 
+    }
+    private BookingRequest convertToRequest(Booking booking) {
+        BookingRequest bookingRequest = new BookingRequest();
+        bookingRequest.setBookingReference(booking.getBookingReference());
+        bookingRequest.setEventId(booking.getEvent().getEventId());
+        bookingRequest.setUserId(booking.getUser().getUserId());
+        bookingRequest.setTicketTypeId(booking.getTicketType().getTicketTypeId());
+        bookingRequest.setQuantity(booking.getQuantity());
+        bookingRequest.setBookingStatus(booking.getBookingStatus());
+
+        return bookingRequest;
     }
 
     /**
@@ -60,8 +77,8 @@ public class BookingController {
     @PostMapping(value = "/createBooking", consumes = "application/json", produces = "application/json")
     public BookingRequest createBooking(@RequestBody BookingRequest bookingrequest) {
         Booking booking =  convertToDto(bookingrequest);
-         bookingService.createBooking(booking);
-         return bookingrequest;
+        bookingService.createBooking(booking);
+        return bookingrequest;
     }
 
     /**
@@ -69,103 +86,75 @@ public class BookingController {
      */
     @GetMapping("/{bookingId}")
     public BookingRequest getBookingById(@PathVariable Long bookingId) {
-       return bookingService.getBookingById(bookingId);
+        return bookingService.getBookingById(bookingId);
     }
 
     /**
      * Find booking by reference number
      */
     @PostMapping("/reference")
-    public ResponseEntity<Booking> getBookingByReference(@RequestBody BookingReferenceRequest request) {
-        try {
-            Booking booking = bookingService.getBookingByReference(request.getBookingReference());
-            return new ResponseEntity<>(booking, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest getBookingByReference(@RequestBody BookingReferenceRequest request) {
+        String requestReference = request.getBookingReference();
+        Booking booking =  bookingService.getBookingByReference(requestReference);
+        System.out.println(requestReference);
+        return convertToRequest(booking);
     }
 
     /**
      * Get all bookings for a user
      */
     @PostMapping("/user")
-    public ResponseEntity<List<Booking>> getUserBookings(@RequestBody UserRequest request) {
-        try {
-            List<Booking> bookings = bookingService.getUserBookings(request.getUserId());
-            return new ResponseEntity<>(bookings, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    public List<BookingRequest> getUserBookings(@RequestBody UserRequest request) {
+        Long userId = request.getUserId();
+        User user =  userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        List<Booking> ans =  user.getBookings();
+        List<BookingRequest> toReturn = new ArrayList<>();
+        for(Booking booking : ans) {
+            toReturn.add(convertToRequest(booking));
         }
+        return toReturn;
     }
 
     /**
      * Get all bookings for an event
      */
     @PostMapping("/event")
-    public ResponseEntity<List<Booking>> getEventBookings(@RequestBody EventRequest request) {
-        try {
-            List<Booking> bookings = bookingService.getEventBookings(request.getEventId());
-            return new ResponseEntity<>(bookings, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+    public List<BookingRequest> getEventBookings(@RequestBody EventRequest request) {
+
+        List<Booking> bookings = bookingService.getEventBookings(request.getEventId());
+        List<BookingRequest> toReturn = new ArrayList<>();
+        for(Booking booking : bookings) {
+            toReturn.add(convertToRequest(booking));
         }
+        return toReturn;
     }
 
     /**
      * Change booking status
      */
     @PutMapping("/{bookingId}/status")
-    public ResponseEntity<Booking> updateBookingStatus(@PathVariable Long bookingId, @RequestBody StatusRequest request) {
-        try {
-            Booking updatedBooking = bookingService.updateBookingStatus(bookingId, request.getStatus());
-            return new ResponseEntity<>(updatedBooking, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest updateBookingStatus(@PathVariable Long bookingId, @RequestBody StatusRequest request) {
+        Booking booking = bookingService.updateBookingStatus(bookingId, request.getStatus());
+        return convertToRequest(booking);
     }
 
     /**
      * Cancel a booking
      */
     @PutMapping("/{bookingId}/cancel")
-    public ResponseEntity<Booking> cancelBooking(@PathVariable Long bookingId) {
-        try {
-            Booking cancelledBooking = bookingService.cancelBooking(bookingId);
-            return new ResponseEntity<>(cancelledBooking, HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest cancelBooking(@PathVariable Long bookingId) {
+        Booking booking = bookingService.cancelBooking(bookingId);
+        return convertToRequest(booking);
     }
 
     /**
      * Confirm booking after payment
      */
     @PutMapping("/{bookingId}/confirm")
-    public ResponseEntity<Booking> confirmBooking(@PathVariable Long bookingId) {
-        try {
-            Booking confirmedBooking = bookingService.confirmBooking(bookingId);
-            return new ResponseEntity<>(confirmedBooking, HttpStatus.OK);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest confirmBooking(@PathVariable Long bookingId) {
+
+        Booking confirmedBooking = bookingService.confirmBooking(bookingId);
+        return convertToRequest(confirmedBooking);
     }
 
     /**

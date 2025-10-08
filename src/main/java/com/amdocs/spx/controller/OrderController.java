@@ -14,6 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/orders")
+@CrossOrigin(origins = "*")
 public class OrderController {
 
     @Autowired
@@ -365,7 +366,7 @@ public class OrderController {
     public static class DateRangeRequest {
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         private LocalDateTime startDate;
-        
+
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         private LocalDateTime endDate;
 
