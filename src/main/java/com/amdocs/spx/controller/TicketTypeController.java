@@ -83,7 +83,7 @@ public class TicketTypeController {
         try {
             TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
 
-            // Convert entity to DTO
+            // Convert tickettype to DTO
             TicketTypeDTO ticketTypeDTO = getTicketTypeDTO(new TicketTypeDTO(), ticketType);
 
             return new ResponseEntity<>(ticketTypeDTO, HttpStatus.OK);

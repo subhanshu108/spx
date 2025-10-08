@@ -10,6 +10,7 @@ import com.amdocs.spx.repository.BookingRepository;
 import com.amdocs.spx.repository.EventRepository;
 import com.amdocs.spx.repository.TicketTypeRepository;
 import com.amdocs.spx.repository.UserRepository;
+import com.amdocs.spx.request.BookingRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -102,9 +103,19 @@ public class BookingService {
     /**
      * Get booking details
      */
-    public Booking getBookingById(Long bookingId) {
-        return bookingRepository.findById(bookingId)
+    public BookingRequest getBookingById(Long bookingId) {
+       Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+       BookingRequest bookingRequest = new BookingRequest();
+       bookingRequest.setBookingStatus(booking.getBookingStatus());
+       bookingRequest.setBookingReference(booking.getBookingReference());
+       bookingRequest.setQuantity(booking.getQuantity());
+       bookingRequest.setEventId(booking.getEvent().getEventId());
+       bookingRequest.setUserId(booking.getUser().getUserId());
+       bookingRequest.setTicketTypeId(booking.getTicketType().getTicketTypeId());
+       return bookingRequest;
+
+
     }
 
     /**

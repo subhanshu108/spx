@@ -1,6 +1,13 @@
 package com.amdocs.spx.controller;
 
 import com.amdocs.spx.entity.Booking;
+import com.amdocs.spx.entity.Event;
+import com.amdocs.spx.entity.TicketType;
+import com.amdocs.spx.entity.User;
+import com.amdocs.spx.repository.EventRepository;
+import com.amdocs.spx.repository.TicketTypeRepository;
+import com.amdocs.spx.repository.UserRepository;
+import com.amdocs.spx.request.BookingRequest;
 import com.amdocs.spx.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -8,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -17,38 +25,51 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private TicketTypeRepository ticketTypeRepository;
+
+    @Autowired
+    private EventRepository eventRepository;
+
+
+    private Booking convertToDto(BookingRequest bookingRequest) {
+        Booking booking = new Booking();
+        booking.setBookingReference(bookingRequest.getBookingReference());
+        booking.setBookingDate(LocalDateTime.now());
+        Event event = eventRepository.findById(bookingRequest.getEventId())
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        booking.setEvent(event);
+        User user = userRepository.findById(bookingRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        booking.setUser(user);
+        TicketType ticketType = ticketTypeRepository.findById(bookingRequest.getTicketTypeId())
+                        .orElseThrow(() -> new RuntimeException("TicketType not found"));
+        booking.setTicketType(ticketType);
+        booking.setQuantity(bookingRequest.getQuantity());
+        booking.setBookingStatus(bookingRequest.getBookingStatus());
+        return booking;
+
+    }
+
     /**
      * Create new booking
      */
     @PostMapping(value = "/createBooking", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        try {
-            Booking createdBooking = bookingService.createBooking(booking);
-            return new ResponseEntity<>(createdBooking, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } catch (IllegalStateException e) {
-            return new ResponseEntity<>(null, HttpStatus.CONFLICT);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest createBooking(@RequestBody BookingRequest bookingrequest) {
+        Booking booking =  convertToDto(bookingrequest);
+         bookingService.createBooking(booking);
+         return bookingrequest;
     }
 
     /**
      * Get booking details
      */
     @GetMapping("/{bookingId}")
-    public ResponseEntity<Booking> getBookingById(@PathVariable Long bookingId) {
-        try {
-            Booking booking = bookingService.getBookingById(bookingId);
-            return new ResponseEntity<>(booking, HttpStatus.OK);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public BookingRequest getBookingById(@PathVariable Long bookingId) {
+       return bookingService.getBookingById(bookingId);
     }
 
     /**
