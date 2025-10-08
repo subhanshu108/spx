@@ -1,5 +1,7 @@
 package com.amdocs.spx.controller;
 
+import com.amdocs.spx.dto.TicketTypeDTO;
+import com.amdocs.spx.entity.Event;
 import com.amdocs.spx.entity.TicketType;
 import com.amdocs.spx.service.TicketTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +22,39 @@ public class TicketTypeController {
      * Add ticket type to event
      */
     @PostMapping("/create-ticket")
-    public ResponseEntity<TicketType> createTicketType(@RequestBody TicketType ticketType) {
+    public ResponseEntity<TicketTypeDTO> createTicketType(@RequestBody TicketTypeDTO ticketTypeDTO) {
         try {
+            // Convert DTO to Entity
+            TicketType ticketType = new TicketType();
+            ticketType.setTypeName(ticketTypeDTO.getTypeName());
+            ticketType.setPrice(ticketTypeDTO.getPrice());
+            ticketType.setQuantityAvailable(ticketTypeDTO.getQuantityAvailable());
+            ticketType.setQuantitySold(ticketTypeDTO.getQuantitySold());
+            ticketType.setIsActive(ticketTypeDTO.getIsActive());
+
+            // Set event reference if provided
+            if (ticketTypeDTO.getEventId() != null) {
+                Event event = new Event();
+                event.setEventId(ticketTypeDTO.getEventId());
+                ticketType.setEvent(event);
+            }
+
             TicketType createdTicketType = ticketTypeService.createTicketType(ticketType);
-            return new ResponseEntity<>(createdTicketType, HttpStatus.CREATED);
+
+            // Convert Entity back to DTO
+            TicketTypeDTO responseDTO = new TicketTypeDTO();
+            responseDTO.setTicketTypeId(createdTicketType.getTicketTypeId());
+            responseDTO.setTypeName(createdTicketType.getTypeName());
+            responseDTO.setPrice(createdTicketType.getPrice());
+            responseDTO.setQuantityAvailable(createdTicketType.getQuantityAvailable());
+            responseDTO.setQuantitySold(createdTicketType.getQuantitySold());
+            responseDTO.setIsActive(createdTicketType.getIsActive());
+
+            if (createdTicketType.getEvent() != null) {
+                responseDTO.setEventId(createdTicketType.getEvent().getEventId());
+            }
+
+            return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
         } catch (RuntimeException e) {
@@ -32,7 +63,6 @@ public class TicketTypeController {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
     /**
      * Modify ticket type details
      */
