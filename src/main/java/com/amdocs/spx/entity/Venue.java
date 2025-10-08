@@ -1,8 +1,6 @@
 package com.amdocs.spx.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,6 +34,5 @@ public class Venue {
     private Integer totalCapacity;
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("venue")
     private List<Event> events = new ArrayList<>();
 }

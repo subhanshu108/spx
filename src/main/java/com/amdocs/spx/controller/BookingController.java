@@ -20,7 +20,7 @@ public class BookingController {
     /**
      * Create new booking
      */
-    @PostMapping("/createBooking")
+    @PostMapping(value = "/createBooking", consumes = "application/json", produces = "application/json")
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
         try {
             Booking createdBooking = bookingService.createBooking(booking);
