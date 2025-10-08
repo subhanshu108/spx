@@ -1,9 +1,10 @@
 package com.amdocs.spx.service;
 
-
+import com.amdocs.spx.dto.OrderDTO;
 import com.amdocs.spx.entity.Booking;
 import com.amdocs.spx.entity.User;
 import com.amdocs.spx.exception.ResourceNotFoundException;
+import com.amdocs.spx.mapper.OrderMapper;
 import com.amdocs.spx.repository.BookingRepository;
 import com.amdocs.spx.repository.OrderRepository;
 import com.amdocs.spx.repository.UserRepository;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
@@ -32,10 +34,13 @@ public class OrderService {
     @Autowired
     private BookingService bookingService;
 
+    @Autowired
+    private OrderMapper orderMapper;
+
     /**
      * Create order from booking
      */
-    public Order createOrder(Long bookingId) {
+    public OrderDTO createOrder(Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
@@ -62,47 +67,60 @@ public class OrderService {
         order.setPaymentStatus("PENDING");
         order.setCreatedAt(LocalDateTime.now());
 
-        return orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(savedOrder);
     }
 
     /**
      * Create order with payment method
      */
-    public Order createOrder(Long bookingId, String paymentMethod) {
-        Order order = createOrder(bookingId);
+    public OrderDTO createOrder(Long bookingId, String paymentMethod) {
+        OrderDTO orderDTO = createOrder(bookingId);
+        
+        // Get the order entity to update payment method
+        Order order = orderRepository.findById(orderDTO.getOrderId())
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        
         order.setPaymentMethod(paymentMethod);
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+        
+        return orderMapper.toDTO(updatedOrder);
     }
 
     /**
      * Get order details
      */
-    public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId)
+    public OrderDTO getOrderById(Long orderId) {
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        return orderMapper.toDTO(order);
     }
 
     /**
      * Find order by order number
      */
-    public Order getOrderByNumber(String orderNumber) {
-        return orderRepository.findByOrderNumber(orderNumber)
+    public OrderDTO getOrderByNumber(String orderNumber) {
+        Order order = orderRepository.findByOrderNumber(orderNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with number: " + orderNumber));
+        return orderMapper.toDTO(order);
     }
 
     /**
      * Get all orders for a user
      */
-    public List<Order> getUserOrders(Long userId) {
+    public List<OrderDTO> getUserOrders(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        return orderRepository.findByUser(user);
+        List<Order> orders = orderRepository.findByUser(user);
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Update payment status
      */
-    public Order updatePaymentStatus(Long orderId, String paymentStatus) {
+    public OrderDTO updatePaymentStatus(Long orderId, String paymentStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -121,13 +139,14 @@ public class OrderService {
             bookingService.confirmBooking(order.getBooking().getBookingId());
         }
 
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(updatedOrder);
     }
 
     /**
      * Handle payment processing
      */
-    public Order processPayment(Long orderId, String paymentMethod, String transactionId) {
+    public OrderDTO processPayment(Long orderId, String paymentMethod, String transactionId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -146,13 +165,14 @@ public class OrderService {
         order.setTransactionId(transactionId);
         order.setPaymentStatus("PROCESSING");
 
-        return orderRepository.save(order);
+        Order processedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(processedOrder);
     }
 
     /**
      * Confirm successful payment
      */
-    public Order confirmPayment(Long orderId, String transactionId) {
+    public OrderDTO confirmPayment(Long orderId, String transactionId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -168,13 +188,14 @@ public class OrderService {
         // Confirm the associated booking
         bookingService.confirmBooking(order.getBooking().getBookingId());
 
-        return orderRepository.save(order);
+        Order confirmedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(confirmedOrder);
     }
 
     /**
      * Mark payment as failed
      */
-    public Order markPaymentFailed(Long orderId, String reason) {
+    public OrderDTO markPaymentFailed(Long orderId, String reason) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -184,13 +205,14 @@ public class OrderService {
 
         order.setPaymentStatus("FAILED");
 
-        return orderRepository.save(order);
+        Order failedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(failedOrder);
     }
 
     /**
      * Process refund
      */
-    public Order refundOrder(Long orderId, String reason) {
+    public OrderDTO refundOrder(Long orderId, String reason) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -209,46 +231,62 @@ public class OrderService {
 
         order.setPaymentStatus("REFUNDED");
 
-        return orderRepository.save(order);
+        Order refundedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(refundedOrder);
     }
 
     /**
      * Get user's order history
      */
-    public List<Order> getOrderHistory(Long userId) {
+    public List<OrderDTO> getOrderHistory(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        return orderRepository.findByUserOrderByCreatedAtDesc(user);
+        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get orders by payment status
      */
-    public List<Order> getOrdersByPaymentStatus(String paymentStatus) {
-        return orderRepository.findByPaymentStatus(paymentStatus.toUpperCase());
+    public List<OrderDTO> getOrdersByPaymentStatus(String paymentStatus) {
+        List<Order> orders = orderRepository.findByPaymentStatus(paymentStatus.toUpperCase());
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get user orders by payment status
      */
-    public List<Order> getUserOrdersByPaymentStatus(Long userId, String paymentStatus) {
+    public List<OrderDTO> getUserOrdersByPaymentStatus(Long userId, String paymentStatus) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        return orderRepository.findByUserAndPaymentStatus(user, paymentStatus.toUpperCase());
+        List<Order> orders = orderRepository.findByUserAndPaymentStatus(user, paymentStatus.toUpperCase());
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get pending orders (for cleanup/expiry)
      */
-    public List<Order> getPendingOrders() {
-        return orderRepository.findByPaymentStatus("PENDING");
+    public List<OrderDTO> getPendingOrders() {
+        List<Order> orders = orderRepository.findByPaymentStatus("PENDING");
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
      * Get orders created between dates
      */
-    public List<Order> getOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
-        return orderRepository.findByCreatedAtBetween(startDate, endDate);
+    public List<OrderDTO> getOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+        List<Order> orders = orderRepository.findByCreatedAtBetween(startDate, endDate);
+        return orders.stream()
+                .map(orderMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -304,7 +342,7 @@ public class OrderService {
     /**
      * Retry failed payment
      */
-    public Order retryPayment(Long orderId) {
+    public OrderDTO retryPayment(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
@@ -320,6 +358,7 @@ public class OrderService {
         order.setPaymentStatus("PENDING");
         order.setTransactionId(null);
 
-        return orderRepository.save(order);
+        Order retriedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(retriedOrder);
     }
 }
