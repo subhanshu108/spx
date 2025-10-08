@@ -1,5 +1,6 @@
 package com.amdocs.spx.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,6 +24,7 @@ public class TicketType {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
+    @JsonIgnoreProperties({"ticketTypes", "bookings", "reviews", "organizer", "venue"})
     private Event event;
 
     @Column(name = "type_name", nullable = false, length = 100)
@@ -41,8 +43,10 @@ public class TicketType {
     private Boolean isActive = true;
 
     @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"ticketType", "event"})
     private List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties({"ticketType", "order"})
     private List<OrderItem> orderItems = new ArrayList<>();
 }

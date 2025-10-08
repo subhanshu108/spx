@@ -57,14 +57,15 @@ public class Event {
     private Integer ticketsSold = 0;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("event")
+    @JsonIgnoreProperties({"event", "bookings", "orderItems"})
+
     private List<TicketType> ticketTypes = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("event")
+    @JsonIgnoreProperties({"event", "user", "ticketType"})
     private List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("event")
+    @JsonIgnoreProperties({"event", "user"})
     private List<Review> reviews = new ArrayList<>();
 }
