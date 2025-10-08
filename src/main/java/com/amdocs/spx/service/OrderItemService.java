@@ -8,7 +8,6 @@ import com.amdocs.spx.repository.OrderItemRepository;
 import com.amdocs.spx.repository.OrderRepository;
 import com.amdocs.spx.repository.TicketTypeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

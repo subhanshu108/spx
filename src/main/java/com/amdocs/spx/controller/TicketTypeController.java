@@ -3,6 +3,7 @@ package com.amdocs.spx.controller;
 import com.amdocs.spx.dto.TicketTypeDTO;
 import com.amdocs.spx.entity.Event;
 import com.amdocs.spx.entity.TicketType;
+import com.amdocs.spx.repository.TicketTypeRepository;
 import com.amdocs.spx.service.TicketTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/ticket-types")
@@ -17,67 +19,43 @@ public class TicketTypeController {
 
     @Autowired
     private TicketTypeService ticketTypeService;
-
+    @Autowired
+    private TicketTypeRepository ticketTypeRepository;
     /**
      * Add ticket type to event
      */
     @PostMapping("/create-ticket")
-    public ResponseEntity<TicketTypeDTO> createTicketType(@RequestBody TicketTypeDTO ticketTypeDTO) {
-        try {
-            // Convert DTO to Entity
-            TicketType ticketType = new TicketType();
-            ticketType.setTypeName(ticketTypeDTO.getTypeName());
-            ticketType.setPrice(ticketTypeDTO.getPrice());
-            ticketType.setQuantityAvailable(ticketTypeDTO.getQuantityAvailable());
-            ticketType.setQuantitySold(ticketTypeDTO.getQuantitySold());
-            ticketType.setIsActive(ticketTypeDTO.getIsActive());
+    public TicketTypeDTO createTicketType(@RequestBody TicketType ticketType) {
 
-            // Set event reference if provided
-            if (ticketTypeDTO.getEventId() != null) {
-                Event event = new Event();
-                event.setEventId(ticketTypeDTO.getEventId());
-                ticketType.setEvent(event);
-            }
-
-            TicketType createdTicketType = ticketTypeService.createTicketType(ticketType);
-
-            // Convert Entity back to DTO
-            TicketTypeDTO responseDTO = new TicketTypeDTO();
-            responseDTO.setTicketTypeId(createdTicketType.getTicketTypeId());
-            responseDTO.setTypeName(createdTicketType.getTypeName());
-            responseDTO.setPrice(createdTicketType.getPrice());
-            responseDTO.setQuantityAvailable(createdTicketType.getQuantityAvailable());
-            responseDTO.setQuantitySold(createdTicketType.getQuantitySold());
-            responseDTO.setIsActive(createdTicketType.getIsActive());
-
-            if (createdTicketType.getEvent() != null) {
-                responseDTO.setEventId(createdTicketType.getEvent().getEventId());
-            }
-
-            return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+//        private Long eventId;
+//        private String typeName;
+//        private BigDecimal price;
+//        private Integer quantityAvailable;
+//        private Integer quantitySold;
+//        private Boolean isActive;
+        TicketTypeDTO ticketTypeDTO = new TicketTypeDTO();
+        return getTicketTypeDTO(ticketTypeDTO, ticketType);
     }
+
     /**
      * Modify ticket type details
      */
     @PutMapping("/{ticketTypeId}")
-    public ResponseEntity<TicketType> updateTicketType(@PathVariable Long ticketTypeId, @RequestBody TicketType ticketTypeDetails) {
-        try {
-            TicketType updatedTicketType = ticketTypeService.updateTicketType(ticketTypeId, ticketTypeDetails);
-            return new ResponseEntity<>(updatedTicketType, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public TicketTypeDTO updateTicketType(@PathVariable Long ticketTypeId, @RequestBody TicketType ticketTypeDetails) {
+        TicketTypeDTO ticketTypeDTO = new TicketTypeDTO();
+        TicketType ticketType = ticketTypeRepository.findById(ticketTypeId)
+                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        return getTicketTypeDTO(ticketTypeDTO, ticketType);
+    }
+
+    private TicketTypeDTO getTicketTypeDTO(TicketTypeDTO ticketTypeDTO, TicketType ticketType) {
+        ticketTypeDTO.setEventId(ticketType.getEvent().getEventId());
+        ticketTypeDTO.setTypeName(ticketType.getTypeName());
+        ticketTypeDTO.setPrice(ticketType.getPrice());
+        ticketTypeDTO.setQuantityAvailable(ticketType.getQuantityAvailable());
+        ticketTypeDTO.setQuantitySold(ticketType.getQuantitySold());
+        ticketTypeDTO.setIsActive(ticketType.getIsActive());
+        return  ticketTypeDTO;
     }
 
     /**
@@ -101,10 +79,14 @@ public class TicketTypeController {
      * Get ticket type details
      */
     @GetMapping("/{ticketTypeId}")
-    public ResponseEntity<TicketType> getTicketTypeById(@PathVariable Long ticketTypeId) {
+    public ResponseEntity<TicketTypeDTO> getTicketTypeById(@PathVariable Long ticketTypeId) {
         try {
             TicketType ticketType = ticketTypeService.getTicketTypeById(ticketTypeId);
-            return new ResponseEntity<>(ticketType, HttpStatus.OK);
+
+            // Convert entity to DTO
+            TicketTypeDTO ticketTypeDTO = getTicketTypeDTO(new TicketTypeDTO(), ticketType);
+
+            return new ResponseEntity<>(ticketTypeDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
@@ -116,16 +98,23 @@ public class TicketTypeController {
      * Get all ticket types for an event
      */
     @PostMapping("/event")
-    public ResponseEntity<List<TicketType>> getTicketTypesByEvent(@RequestBody EventRequest request) {
+    public ResponseEntity<List<TicketTypeDTO>> getTicketTypesByEvent(@RequestBody EventRequest request) {
         try {
             List<TicketType> ticketTypes = ticketTypeService.getTicketTypesByEvent(request.getEventId());
-            return new ResponseEntity<>(ticketTypes, HttpStatus.OK);
+
+            // Convert each TicketType entity to TicketTypeDTO
+            List<TicketTypeDTO> ticketTypeDTOs = ticketTypes.stream()
+                    .map(ticketType -> getTicketTypeDTO(new TicketTypeDTO(), ticketType))
+                    .collect(Collectors.toList());
+
+            return new ResponseEntity<>(ticketTypeDTOs, HttpStatus.OK);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
 
     /**
      * Update available quantity

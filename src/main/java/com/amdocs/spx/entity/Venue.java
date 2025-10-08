@@ -1,6 +1,7 @@
 package com.amdocs.spx.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,5 +35,6 @@ public class Venue {
     private Integer totalCapacity;
 
     @OneToMany(mappedBy = "venue", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Event> events = new ArrayList<>();
 }

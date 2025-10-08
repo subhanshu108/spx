@@ -1,6 +1,7 @@
 package com.amdocs.spx.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -48,9 +49,11 @@ public class User {
     private Boolean isActive = true;
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Event> organizedEvents = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

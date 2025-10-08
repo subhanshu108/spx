@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class TicketTypeDTO {
 
-    private Long ticketTypeId;
+
     private Long eventId;
     private String typeName;
     private BigDecimal price;
