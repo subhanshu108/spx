@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/ticket-types")
-@CrossOrigin(origins = "*")
 public class TicketTypeController {
 
     @Autowired
