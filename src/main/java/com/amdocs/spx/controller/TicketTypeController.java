@@ -42,6 +42,12 @@ public class TicketTypeController {
         TicketTypeDTO ticketTypeDTO = new TicketTypeDTO();
         TicketType ticketType = ticketTypeRepository.findById(ticketTypeId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        ticketType.setTypeName(ticketTypeDetails.getTypeName());
+        ticketType.setIsActive(ticketTypeDetails.getIsActive());
+        ticketType.setPrice(ticketTypeDetails.getPrice());
+        ticketType.setQuantityAvailable(ticketTypeDetails.getQuantityAvailable());
+        ticketType.setQuantitySold(ticketTypeDetails.getQuantitySold());
+        ticketTypeRepository.save(ticketType);
         return getTicketTypeDTO(ticketTypeDTO, ticketType);
     }
 

@@ -46,6 +46,5 @@ public class TicketType {
     @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
     private List<Booking> bookings = new ArrayList<>();
 
-    @OneToMany(mappedBy = "ticketType", cascade = CascadeType.ALL)
-    private List<OrderItem> orderItems = new ArrayList<>();
+ 
 }

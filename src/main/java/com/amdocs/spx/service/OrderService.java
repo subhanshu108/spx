@@ -1,6 +1,5 @@
 package com.amdocs.spx.service;
 
-import com.amdocs.spx.controller.OrderController;
 import com.amdocs.spx.dto.OrderDTO;
 import com.amdocs.spx.entity.Booking;
 import com.amdocs.spx.entity.User;
@@ -14,11 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -161,164 +160,9 @@ public class OrderService {
         return orderMapper.toDTO(processedOrder);
     }
 
-    /**
-     * Confirm successful payment
-     */
-    public OrderDTO confirmPayment(Long orderId, String transactionId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        // Check if order is in processing status
-        if (!"PROCESSING".equals(order.getPaymentStatus()) && !"PENDING".equals(order.getPaymentStatus())) {
-            throw new IllegalStateException("Can only confirm payment for processing or pending orders");
-        }
 
-        order.setTransactionId(transactionId);
-        order.setPaymentStatus("COMPLETED");
-        order.setPaymentDate(LocalDateTime.now());
 
-        // Confirm the associated booking
-        bookingService.confirmBooking(order.getBooking().getBookingId());
-
-        Order confirmedOrder = orderRepository.save(order);
-        return orderMapper.toDTO(confirmedOrder);
-    }
-
-    /**
-     * Mark payment as failed
-     */
-    public OrderDTO markPaymentFailed(Long orderId, String reason) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-
-        if ("COMPLETED".equals(order.getPaymentStatus())) {
-            throw new IllegalStateException("Cannot mark completed payment as failed");
-        }
-
-        order.setPaymentStatus("FAILED");
-
-        Order failedOrder = orderRepository.save(order);
-        return orderMapper.toDTO(failedOrder);
-    }
-
-    /**
-     * Process refund
-     */
-    public OrderDTO refundOrder(Long orderId, String reason) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-
-        // Check if payment was completed
-        if (!"COMPLETED".equals(order.getPaymentStatus())) {
-            throw new IllegalStateException("Can only refund completed payments");
-        }
-
-        // Check if already refunded
-        if ("REFUNDED".equals(order.getPaymentStatus())) {
-            throw new IllegalStateException("Order is already refunded");
-        }
-
-        // Cancel the associated booking
-        bookingService.cancelBooking(order.getBooking().getBookingId());
-
-        order.setPaymentStatus("REFUNDED");
-
-        Order refundedOrder = orderRepository.save(order);
-        return orderMapper.toDTO(refundedOrder);
-    }
-
-    /**
-     * Get user's order history
-     */
-    public List<OrderDTO> getOrderHistory(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get orders by payment status
-     */
-    public List<OrderDTO> getOrdersByPaymentStatus(String paymentStatus) {
-        List<Order> orders = orderRepository.findByPaymentStatus(paymentStatus.toUpperCase());
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get user orders by payment status
-     */
-    public List<OrderDTO> getUserOrdersByPaymentStatus(Long userId, String paymentStatus) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
-        List<Order> orders = orderRepository.findByUserAndPaymentStatus(user, paymentStatus.toUpperCase());
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get pending orders (for cleanup/expiry)
-     */
-    public List<OrderDTO> getPendingOrders() {
-        List<Order> orders = orderRepository.findByPaymentStatus("PENDING");
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get orders created between dates
-     */
-    public List<OrderDTO> getOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
-        List<Order> orders = orderRepository.findByCreatedAtBetween(startDate, endDate);
-        return orders.stream()
-                .map(orderMapper::toDTO)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Get total revenue for a user (as organizer)
-     */
-    public BigDecimal getUserRevenue(Long userId) {
-        List<Order> completedOrders = orderRepository.findByUserAndPaymentStatus(
-                userRepository.findById(userId)
-                        .orElseThrow(() -> new ResourceNotFoundException("User not found")),
-                "COMPLETED"
-        );
-
-        return completedOrders.stream()
-                .map(Order::getTotalAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * Cancel expired pending orders
-     */
-    public void cancelExpiredOrders(int expiryMinutes) {
-        LocalDateTime expiryTime = LocalDateTime.now().minusMinutes(expiryMinutes);
-        List<Order> expiredOrders = orderRepository.findByPaymentStatusAndCreatedAtBefore("PENDING", expiryTime);
-
-        for (Order order : expiredOrders) {
-            try {
-                order.setPaymentStatus("FAILED");
-                orderRepository.save(order);
-                // Cancel the associated booking
-                bookingService.cancelBooking(order.getBooking().getBookingId());
-            } catch (Exception e) {
-                // Log error but continue processing other orders
-                System.err.println("Failed to cancel order: " + order.getOrderNumber() + " - " + e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Generate unique order number
-     */
     private String generateOrderNumber() {
         String orderNumber;
         do {
@@ -331,28 +175,15 @@ public class OrderService {
         return orderNumber;
     }
 
-    /**
-     * Retry failed payment
-     */
-    public OrderDTO retryPayment(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        if (!"FAILED".equals(order.getPaymentStatus())) {
-            throw new IllegalStateException("Can only retry failed payments");
-        }
 
-        // Validate booking is still valid
-        if (!bookingService.validateBooking(order.getBooking().getBookingId())) {
-            throw new IllegalStateException("Booking is no longer valid");
-        }
 
-        order.setPaymentStatus("PENDING");
-        order.setTransactionId(null);
 
-        Order retriedOrder = orderRepository.save(order);
-        return orderMapper.toDTO(retriedOrder);
-    }
+
+
+
+
+
 
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
@@ -369,4 +200,30 @@ public class OrderService {
     }
 
 
+    public OrderDTO editOrder(Long id, OrderDTO orderDTO) {
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + id));
+
+        // Only update fields that are not null in the DTO
+        if (orderDTO.getOrderNumber() != null) {
+            order.setOrderNumber(orderDTO.getOrderNumber());
+        }
+        if (orderDTO.getTotalAmount() != null) {
+            order.setTotalAmount(orderDTO.getTotalAmount());
+        }
+        if (orderDTO.getPaymentStatus() != null) {
+            order.setPaymentStatus(orderDTO.getPaymentStatus());
+        }
+        if (orderDTO.getCreatedAt() != null) {
+            order.setCreatedAt(orderDTO.getCreatedAt());
+        }
+        if (orderDTO.getBookingId() != null) {
+            Booking booking = bookingRepository.findById(orderDTO.getBookingId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + orderDTO.getBookingId()));
+            order.setBooking(booking);
+        }
+
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toDTO(updatedOrder);
+    }
 }
