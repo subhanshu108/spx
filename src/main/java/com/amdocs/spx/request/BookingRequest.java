@@ -21,4 +21,5 @@ public class BookingRequest {
     private String bookingStatus;
     private String eventName;
     private LocalDate bookingDate;
+    private String venueName;
 }

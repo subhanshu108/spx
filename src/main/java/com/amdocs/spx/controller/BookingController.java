@@ -1,9 +1,6 @@
 package com.amdocs.spx.controller;
 
-import com.amdocs.spx.entity.Booking;
-import com.amdocs.spx.entity.Event;
-import com.amdocs.spx.entity.TicketType;
-import com.amdocs.spx.entity.User;
+import com.amdocs.spx.entity.*;
 import com.amdocs.spx.repository.BookingRepository;
 import com.amdocs.spx.repository.EventRepository;
 import com.amdocs.spx.repository.TicketTypeRepository;
@@ -86,6 +83,8 @@ public class BookingController {
         Long eventId = booking.getEvent().getEventId();
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
+        Venue venue = event.getVenue();
+        bookingRequest.setVenueName(venue.getVenueName());
         bookingRequest.setEventName(event.getEventName());
         bookingRequest.setBookingDate(LocalDate.from(event.getEventDate()));
         return bookingRequest;
