@@ -1,6 +1,7 @@
 package com.amdocs.spx.controller;
 
 import com.amdocs.spx.dto.UserDTO;
+import com.amdocs.spx.dto.UserDTO2;
 import com.amdocs.spx.entity.User;
 import com.amdocs.spx.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +76,8 @@ public class UserController {
     }
 
     @PutMapping("/editUser/{id}")
-    public ResponseEntity<UserDTO> editUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
-        User user = userService.editUser(id,userDTO);
+    public ResponseEntity<UserDTO> editUser(@PathVariable Long id, @RequestBody UserDTO2 userDTO2) {
+        User user = userService.editUser(id,userDTO2);
         return ResponseEntity.ok(convertToDTO(user));
     }
 
