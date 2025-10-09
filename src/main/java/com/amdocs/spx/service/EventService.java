@@ -60,7 +60,9 @@ public class EventService {
     public Event updateEvent(Long eventId, Event eventDetails) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found with id: " + eventId));
-
+        if (eventDetails.getStatus() != null) {
+            event.setStatus(eventDetails.getStatus());
+        }
         if (eventDetails.getEventName() != null) {
             event.setEventName(eventDetails.getEventName());
         }

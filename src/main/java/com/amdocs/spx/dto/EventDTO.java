@@ -71,6 +71,7 @@ public class EventDTO {
         private Double price;
         private Integer quantityAvailable;
         private Integer quantitySold;
+        private String status;
         private Boolean isActive;
     }
 

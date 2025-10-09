@@ -44,6 +44,7 @@ public class EventController {
         try {
             Event eventDetails = convertToEntity(eventDTO);
             Event updatedEvent = eventService.updateEvent(eventId, eventDetails);
+            System.out.println(updatedEvent.getStatus());
             EventDTO responseDTO = convertToDTO(updatedEvent);
             return new ResponseEntity<>(responseDTO, HttpStatus.OK);
         } catch (RuntimeException e) {
