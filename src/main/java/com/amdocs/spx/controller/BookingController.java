@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class BookingController {
         return booking;
 
     }
+
     private BookingRequest convertToRequest(Booking booking) {
         BookingRequest bookingRequest = new BookingRequest();
         bookingRequest.setBookingReference(booking.getBookingReference());
@@ -70,6 +72,25 @@ public class BookingController {
         bookingRequest.setBookingId(booking.getBookingId());
         return bookingRequest;
     }
+    private BookingRequest convertToRequest(Booking booking, Long  userId) {
+        BookingRequest bookingRequest = new BookingRequest();
+        bookingRequest.setBookingReference(booking.getBookingReference());
+        bookingRequest.setEventId(booking.getEvent().getEventId());
+        bookingRequest.setUserId(booking.getUser().getUserId());
+        bookingRequest.setTicketTypeId(booking.getTicketType().getTicketTypeId());
+        bookingRequest.setQuantity(booking.getQuantity());
+        bookingRequest.setBookingStatus(booking.getBookingStatus());
+        bookingRequest.setBookingId(booking.getBookingId());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Long eventId = booking.getEvent().getEventId();
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        bookingRequest.setEventName(event.getEventName());
+        bookingRequest.setBookingDate(LocalDate.from(event.getEventDate()));
+        return bookingRequest;
+    }
+
 
     /**
      * Create new booking
@@ -110,7 +131,7 @@ public class BookingController {
         List<Booking> ans =  user.getBookings();
         List<BookingRequest> toReturn = new ArrayList<>();
         for(Booking booking : ans) {
-            toReturn.add(convertToRequest(booking));
+            toReturn.add(convertToRequest(booking,userId));
         }
         return toReturn;
     }
