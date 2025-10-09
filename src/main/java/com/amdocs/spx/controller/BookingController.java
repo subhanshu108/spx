@@ -67,7 +67,7 @@ public class BookingController {
         bookingRequest.setTicketTypeId(booking.getTicketType().getTicketTypeId());
         bookingRequest.setQuantity(booking.getQuantity());
         bookingRequest.setBookingStatus(booking.getBookingStatus());
-
+        bookingRequest.setBookingId(booking.getBookingId());
         return bookingRequest;
     }
 

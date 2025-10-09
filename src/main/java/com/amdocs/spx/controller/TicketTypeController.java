@@ -46,6 +46,7 @@ public class TicketTypeController {
     }
 
     private TicketTypeDTO getTicketTypeDTO(TicketTypeDTO ticketTypeDTO, TicketType ticketType) {
+        ticketTypeDTO.setTicketTypeId(ticketType.getTicketTypeId());
         ticketTypeDTO.setEventId(ticketType.getEvent().getEventId());
         ticketTypeDTO.setTypeName(ticketType.getTypeName());
         ticketTypeDTO.setPrice(ticketType.getPrice());

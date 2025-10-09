@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingRequest {
+    private Long bookingId;
     private Long userId;
     private Long eventId;
     private Long ticketTypeId;

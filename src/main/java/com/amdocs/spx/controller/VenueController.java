@@ -104,6 +104,7 @@ public class VenueController {
             for(Venue venue : venues){
                 venueDTOList.add(convertToDTO(venue));
             }
+
             return new ResponseEntity<>(venueDTOList, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
