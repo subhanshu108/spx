@@ -36,6 +36,11 @@ public class EventController {
         }
     }
 
+    @GetMapping("/userId/{userId}")
+    public List<EventDTO> getEventByUserId(@PathVariable Long userId) {
+        return eventService.getEventByUserId(userId);
+    }
+
     /**
      * Modify event details
      */
