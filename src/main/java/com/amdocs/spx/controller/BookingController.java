@@ -77,8 +77,8 @@ public class BookingController {
     @PostMapping(value = "/createBooking", consumes = "application/json", produces = "application/json")
     public BookingRequest createBooking(@RequestBody BookingRequest bookingrequest) {
         Booking booking =  convertToDto(bookingrequest);
-        bookingService.createBooking(booking);
-        return bookingrequest;
+        return convertToRequest(bookingService.createBooking(booking));
+
     }
 
     /**
