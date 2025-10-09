@@ -1,5 +1,6 @@
 package com.amdocs.spx.service;
 
+import com.amdocs.spx.dto.UserDTO;
 import com.amdocs.spx.entity.User;
 import com.amdocs.spx.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +57,26 @@ public class UserService {
     
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public String deleteUser(Long id) {
+        userRepository.deleteById(id);
+        return "User Deleted with id " + id;
+    }
+
+    public User editUser(Long id, UserDTO userDTO) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setPasswordHash(userDTO.getPasswordHash());
+        user.setIsActive(userDTO.getIsActive());
+        user.setRole(userDTO.getRole());
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+        user.setPhoneNumber(userDTO.getPhoneNumber());
+        return userRepository.save(user);
+
+
     }
 }

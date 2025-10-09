@@ -289,6 +289,13 @@ public class EventController {
         return event;
     }
 
+    @DeleteMapping("/deleteEvent/{id}")
+    public void deleteEventById(@PathVariable("id") Long id) {
+         eventService.deleteEvent(id);
+         System.out.println("Delete event with id: " + id);
+    }
+
+
     // Request DTO classes for @RequestBody parameters
 
     public static class CategoryRequest {

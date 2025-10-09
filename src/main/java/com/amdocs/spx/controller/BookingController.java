@@ -232,6 +232,21 @@ public class BookingController {
         }
     }
 
+    @DeleteMapping("/delete/{id}")
+    public String deleteBooking(@PathVariable Long id) {
+        return bookingService.deleteBooking(id);
+    }
+
+    @GetMapping("/getAllBookings")
+    public List<BookingRequest> getAllBookings() {
+        List<Booking>  bookings = bookingService.getAllBookings();
+        List<BookingRequest> toReturn = new ArrayList<>();
+        for(Booking booking : bookings) {
+            toReturn.add(convertToRequest(booking));
+        }
+        return toReturn;
+    }
+
     /**
      * Complete booking (mark as completed after event)
      */

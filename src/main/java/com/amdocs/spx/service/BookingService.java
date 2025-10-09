@@ -308,4 +308,12 @@ public class BookingService {
         booking.setBookingStatus("COMPLETED");
         return bookingRepository.save(booking);
     }
+
+    public String deleteBooking(Long id) {
+        bookingRepository.deleteById(id);
+        return "Booking with id " + id + " has been deleted";
+    }
+    public List<Booking> getAllBookings(){
+        return bookingRepository.findAll();
+    }
 }

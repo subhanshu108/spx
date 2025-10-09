@@ -69,6 +69,17 @@ public class UserController {
         return ResponseEntity.ok(userDTOs);
     }
 
+    @DeleteMapping("/delete/{id}")
+    public String deleteUser(@PathVariable Long id) {
+        return userService.deleteUser(id);
+    }
+
+    @PutMapping("/editUser/{id}")
+    public ResponseEntity<UserDTO> editUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        User user = userService.editUser(id,userDTO);
+        return ResponseEntity.ok(convertToDTO(user));
+    }
+
     // Helper methods to convert between Entity and DTO
     private User convertToEntity(UserDTO userDTO) {
         User user = new User();
