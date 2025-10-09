@@ -47,10 +47,9 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
         User user = userRepository.findById(booking.getUser().getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + booking.getUser().getUserId()));
-        if(!booking.getBookingStatus().equals("PENDING")) {
-            throw new RuntimeException("Booking status is not PENDING");
+        if(!booking.getOrders().isEmpty()) {
+            throw new ResourceNotFoundException("Orders already exist");
         }
-
         Order order = new Order();
         order.setOrderNumber(generateOrderNumber());
         order.setBooking(booking);

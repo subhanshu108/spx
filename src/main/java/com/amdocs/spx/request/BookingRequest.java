@@ -22,4 +22,5 @@ public class BookingRequest {
     private String eventName;
     private LocalDate bookingDate;
     private String venueName;
+    private Long orderId;
 }

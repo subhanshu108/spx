@@ -49,6 +49,12 @@ public class UserController {
         }
     }
 
+    @GetMapping("/getAllOrganizers")
+    public List<UserDTO> getAllOrganizers() {
+            List<User> user = userService.getAllOrganizers();
+        return user.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
     // 3. Retrieve user details by ID
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Long id) {

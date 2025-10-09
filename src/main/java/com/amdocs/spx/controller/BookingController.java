@@ -1,10 +1,7 @@
 package com.amdocs.spx.controller;
 
 import com.amdocs.spx.entity.*;
-import com.amdocs.spx.repository.BookingRepository;
-import com.amdocs.spx.repository.EventRepository;
-import com.amdocs.spx.repository.TicketTypeRepository;
-import com.amdocs.spx.repository.UserRepository;
+import com.amdocs.spx.repository.*;
 import com.amdocs.spx.request.BookingRequest;
 import com.amdocs.spx.service.BookingService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +35,9 @@ public class BookingController {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
 
     private Booking convertToDto(BookingRequest bookingRequest) {
         Booking booking = new Booking();
@@ -67,6 +67,23 @@ public class BookingController {
         bookingRequest.setQuantity(booking.getQuantity());
         bookingRequest.setBookingStatus(booking.getBookingStatus());
         bookingRequest.setBookingId(booking.getBookingId());
+        Long eventId = booking.getEvent().getEventId();
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+        Venue venue = event.getVenue();
+        bookingRequest.setVenueName(venue.getVenueName());
+        bookingRequest.setEventName(event.getEventName());
+        bookingRequest.setBookingDate(LocalDate.from(event.getEventDate()));
+        bookingRequest.setEventId(booking.getEvent().getEventId());
+        List<Order> orders = booking.getOrders();
+        if (orders != null && !orders.isEmpty()) {
+            Order order = orders.get(0);
+            bookingRequest.setOrderId(order.getOrderId());
+        } else {
+            bookingRequest.setOrderId(null); // No order linked yet
+        }
+
+
         return bookingRequest;
     }
     private BookingRequest convertToRequest(Booking booking, Long  userId) {

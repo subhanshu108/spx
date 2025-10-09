@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,6 +31,17 @@ public class UserService {
         
         user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
         return userRepository.save(user);
+    }
+
+    public List<User> getAllOrganizers(){
+        List<User> users =  userRepository.findAll();
+        List<User> toReturn = new ArrayList<>();
+        for(User user : users){
+            if(user.getRole() == User.Role.ORGANIZER){
+                toReturn.add(user);
+            }
+        }
+        return toReturn;
     }
 
     public User loginUser(String usernameOrEmail, String password) {
