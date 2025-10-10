@@ -21,9 +21,7 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    /**
-     * Create order from booking
-     */
+
     @PostMapping("/createOrder")
     public ResponseEntity<OrderDTO> createOrder(@RequestBody CreateOrderRequest request) {
         try {
@@ -105,7 +103,7 @@ public class OrderController {
         }
     }
 
-   
+
 
 
 

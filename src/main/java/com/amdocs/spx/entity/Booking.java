@@ -40,7 +40,6 @@ public class Booking {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_type_id", nullable = false)
-
     private TicketType ticketType;
 
     @Column(name = "quantity", nullable = false)

@@ -25,6 +25,7 @@ public class TicketTypeController {
     /**
      * Add ticket type to event
      */
+
     @PostMapping("/create-ticket")
     public TicketTypeDTO createTicketType(@RequestBody TicketType ticketType) {
 
@@ -51,16 +52,7 @@ public class TicketTypeController {
         return getTicketTypeDTO(ticketTypeDTO, ticketType);
     }
 
-    private TicketTypeDTO getTicketTypeDTO(TicketTypeDTO ticketTypeDTO, TicketType ticketType) {
-        ticketTypeDTO.setTicketTypeId(ticketType.getTicketTypeId());
-        ticketTypeDTO.setEventId(ticketType.getEvent().getEventId());
-        ticketTypeDTO.setTypeName(ticketType.getTypeName());
-        ticketTypeDTO.setPrice(ticketType.getPrice());
-        ticketTypeDTO.setQuantityAvailable(ticketType.getQuantityAvailable());
-        ticketTypeDTO.setQuantitySold(ticketType.getQuantitySold());
-        ticketTypeDTO.setIsActive(ticketType.getIsActive());
-        return  ticketTypeDTO;
-    }
+
 
     /**
      * Remove ticket type
@@ -250,5 +242,15 @@ public class TicketTypeController {
 
         public Integer getRemainingTickets() { return remainingTickets; }
         public void setRemainingTickets(Integer remainingTickets) { this.remainingTickets = remainingTickets; }
+    }
+    private TicketTypeDTO getTicketTypeDTO(TicketTypeDTO ticketTypeDTO, TicketType ticketType) {
+        ticketTypeDTO.setTicketTypeId(ticketType.getTicketTypeId());
+        ticketTypeDTO.setEventId(ticketType.getEvent().getEventId());
+        ticketTypeDTO.setTypeName(ticketType.getTypeName());
+        ticketTypeDTO.setPrice(ticketType.getPrice());
+        ticketTypeDTO.setQuantityAvailable(ticketType.getQuantityAvailable());
+        ticketTypeDTO.setQuantitySold(ticketType.getQuantitySold());
+        ticketTypeDTO.setIsActive(ticketType.getIsActive());
+        return  ticketTypeDTO;
     }
 }
