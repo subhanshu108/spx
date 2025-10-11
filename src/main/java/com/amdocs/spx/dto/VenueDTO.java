@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VenueDTO {
 
-
     private Long venueId;
     private String venueName;
     private String venueAddress;
