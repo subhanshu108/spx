@@ -121,6 +121,7 @@ public class BookingController {
     /**
      * Get booking details
      */
+
     @GetMapping("/{bookingId}")
     public BookingRequest getBookingById(@PathVariable Long bookingId) {
         return bookingService.getBookingById(bookingId);
